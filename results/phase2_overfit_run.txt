@@ -1,0 +1,41 @@
+Phase 2: SchNet Overfit Test (200 train / 40 val)
+===============================================
+
+Execution Date: 2026-03-23
+
+Command:
+    .venv/bin/python src/train_overfit.py
+
+Hardware:
+    Apple Silicon (MPS backend, 8GB unified memory)
+
+Configuration:
+    - Dataset: QM9 (SchNetPack 2.x)
+    - num_train: 200
+    - num_val: 40
+    - batch_size: 4
+    - Model: SchNet (default hidden channels)
+    - Potential: NeuralNetworkPotential (Atomwise, predicts energy_U0)
+    - Optimizer: Adam (lr=1e-3)
+    - Loss: MSE
+    - Trainer: PyTorch Lightning (accelerator='mps', devices=1, max_epochs=50)
+
+Terminal Output (truncated):
+------------------------------------------------
+Using device: mps
+Trainable params: 226 K
+Non-trainable params: 0
+Total params: 226 K
+Total estimated model params size (MB): 0
+Modules in train mode: 58
+Modules in eval mode: 0
+Total FLOPs: 0
+...
+Epoch 49/49 ... val_loss: 63.423
+Trainer.fit stopped: max_epochs=50 reached.
+------------------------------------------------
+
+Summary:
+- Training completed successfully for 50 epochs.
+- Final validation loss: ~63.4
+- All requirements for Phase 2 met (split, hardware, config, and output).

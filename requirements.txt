@@ -1,0 +1,8 @@
+# requirements.txt for mdsims
+schnetpack==2.2.0
+pytorch-lightning>=2.0.0
+ase==3.22.1
+torch>=2.0.0
+numpy
+scipy
+torchmetrics
