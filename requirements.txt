@@ -1,8 +1,23 @@
-# requirements.txt for mdsims
+# ── Phase 2 dependencies (SchNetPack pipeline) ────────────────────────────────
+# src/custom_loader.py and src/train_overfit.py depend on these.
+# Do not remove — Phase 2 code is a preserved baseline.
 schnetpack==2.2.0
-pytorch-lightning>=2.0.0
 ase==3.22.1
-torch>=2.0.0
-numpy
+
+# ── Phase 3 dependencies (HDNNP / PyG pipeline) ───────────────────────────────
+# train.py, src/dataset.py, src/model.py, src/lightning_module.py depend on these.
+torch>=2.2.0
+torch-geometric>=2.5.0
+torch-scatter
+torch-sparse
+pytorch-lightning>=2.2.0
+omegaconf>=2.3.0
+pyyaml>=6.0
+pytest>=8.0
+pytest-cov
+numpy>=1.26
 scipy
 torchmetrics
+tqdm
+rich
+ruff

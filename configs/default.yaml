@@ -1,0 +1,60 @@
+# configs/default.yaml — Phase 3 HDNNP Pipeline
+# All hyperparameters live here. No magic numbers in source code.
+# Override at CLI: python train.py --config configs/default.yaml key=value
+
+# ── Reproducibility ────────────────────────────────────────────────────────────
+seed: 42
+
+# ── Data ───────────────────────────────────────────────────────────────────────
+data:
+  root: "data/qm9"             # PyG dataset root (gitignored)
+  subset_size: 10000           # Molecules to use. HARDWARE CONSTRAINT — do not raise without instruction.
+                               # Set to null to use full QM9 (130,831 molecules).
+  r_cutoff: 5.0                # Angstroms — radius for RadiusGraph edge construction
+  batch_size: 32               # Max 32 — MPS memory constraint
+  num_workers: 4
+  pin_memory: true
+  val_fraction: 0.1            # Fraction of subset for validation
+  test_fraction: 0.1           # Fraction of subset for test
+  target_indices: [12, 0]      # [energy_U0_atom (atomisation energy, eV), dipole_moment (Debye)]
+                               # PyG QM9 idx 12 = U0_atom (after ref subtraction, ~-5 to -30 eV)
+                               # PyG QM9 idx  0 = mu dipole norm (Debye)
+                               # NOTE: idx 7 = total DFT energy (~-1000s eV); idx 1 = polarizability
+
+# ── Model ──────────────────────────────────────────────────────────────────────
+model:
+  d_model: 128                 # Atom embedding / hidden dimension. Range: [64, 256]
+  n_interactions: 3            # Number of SchNet interaction blocks. Range: [1, 6]
+  n_rbf: 50                    # Number of radial basis functions. Range: [20, 100]
+  r_cutoff: 5.0                # Must match data.r_cutoff
+  max_atomic_num: 10           # QM9 has Z in {1,6,7,8,9} — 10 with margin
+
+# ── Training ───────────────────────────────────────────────────────────────────
+training:
+  max_epochs: 300
+  learning_rate: 1.0e-3
+  weight_decay: 1.0e-4
+  gradient_clip_val: 1.0
+  lambda_energy: 1.0           # Loss weight for energy_U0 term
+  lambda_dipole: 1.0           # Loss weight for dipole_moment term
+  scheduler:
+    patience: 10               # Epochs with no val improvement before LR reduction
+    factor: 0.5                # LR multiplied by this value on plateau
+    min_lr: 1.0e-6
+
+# ── Checkpointing ──────────────────────────────────────────────────────────────
+checkpoint:
+  dirpath: "checkpoints"
+  monitor: "val/mae_energy"
+  mode: "min"
+  save_top_k: 3
+
+# ── Early stopping ─────────────────────────────────────────────────────────────
+early_stopping:
+  monitor: "val/mae_energy"
+  patience: 30
+  mode: "min"
+
+# ── Logging ────────────────────────────────────────────────────────────────────
+logging:
+  log_every_n_steps: 10

@@ -1,14 +1,38 @@
 
+# ── Python ─────────────────────────────────────────────────────────────────────
 .venv/
-data/
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.eggs/
+dist/
+build/
+
+# ── Phase 2 data (ASE / SchNetPack) ────────────────────────────────────────────
+data/qm9.db
 data_backup_*/
 split.npz
 split_backup_*.npz
 splitting.lock
 splitting_backup_*.lock
+
+# ── Phase 3 data (PyG) ─────────────────────────────────────────────────────────
+data/qm9/
+data/stats.json
+
+# ── Checkpoints & logs ─────────────────────────────────────────────────────────
 lightning_logs/
-!results/
-__pycache__/
-*.db
+checkpoints/
 *.ckpt
 *.tfevents.*
+
+# ── Claude agent context (never commit) ────────────────────────────────────────
+.claude/
+CLAUDE.md
+
+# ── macOS ──────────────────────────────────────────────────────────────────────
+.DS_Store
+
+# ── Keep results/ in git ───────────────────────────────────────────────────────
+!results/
