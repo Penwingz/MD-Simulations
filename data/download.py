@@ -8,8 +8,6 @@ configured subset, and saves them to data/stats.json.
 Usage:
     python data/download.py --config configs/default.yaml
 
-See .claude/INSTRUCTIONS.md § data/download.py for the full spec.
-
 NOTE: This uses torch_geometric.datasets.QM9 — NOT schnetpack.
       The schnetpack-based data lives in data/qm9.db and is managed by
       src/custom_loader.py (Phase 2 — do not modify).
@@ -56,7 +54,7 @@ def compute_stats(dataset, subset_indices: list[int], seed: int) -> dict:
         seed:           Seed used to select the subset (for provenance).
 
     Returns:
-        Stats dict matching SCHEMA.md § Normalisation Stats File format.
+        Normalisation statistics for energy_U0 and dipole_moment.
     """
     log.info("Computing normalisation statistics over %d molecules …", len(subset_indices))
 

@@ -27,7 +27,7 @@ checkpoints/
 *.ckpt
 *.tfevents.*
 
-# Claude agent context (never commit)
+# Project config files (never commit)
 .claude/
 CLAUDE.md
 

@@ -149,7 +149,63 @@ Stretch goals: energy MAE < 0.050 eV, dipole MAE < 0.100 Debye.
 
 ---
 
+## Colab Test Results (Phase 3 — Training Loop)
+
+**Hardware:** Google Colab, Tesla T4 GPU (15 360 MiB), CUDA 12.8, PyTorch 2.10.0+cu128, Lightning 2.6.1
+
+**Subset used for test:** 200 molecules (project training default: 10 000)
+
+**All 4 pipeline tests: PASS**
+
+| Test | Result |
+|---|---|
+| Test 1 — Data pipeline (shapes, normalisation) | PASS |
+| Test 2 — Model forward (shapes, charge neutrality) | PASS |
+| Test 3 — Training loop (fast_dev_run, finite loss) | PASS |
+| Test 4 — Checkpoint save/load (identical outputs) | PASS |
+
+**Test 1 — Batch tensor shapes (batch_size=16):**
+
+```
+batch.z.shape          = (276,)       dtype=int64   — atomic numbers
+batch.pos.shape        = (276, 3)     dtype=float32 — 3D coordinates
+batch.y.shape          = (16, 19)     dtype=float32 — all QM9 targets
+batch.batch.shape      = (276,)       dtype=int64   — molecule index per atom
+batch.edge_index.shape = (2, 4196)    dtype=int64   — radius-graph edges
+energy (norm): mean=-0.0000, std=1.0000
+dipole (norm): mean=-0.0000, std=1.0000
+```
+
+**Test 2 — Model forward pass (HDNNPModel, 186K params):**
+
+```
+device:            cuda
+energy.shape:      (16,)
+dipole.shape:      (16,)
+charges.shape:     (276,)
+energy range:      [1.202, 2.594]
+dipole range:      [0.322, 1.354]
+charge neutrality: all 16 molecules sum to ~0
+```
+
+**Test 3 — Untrained baseline (fast_dev_run=True, 1 batch):**
+
+```
+train/loss:        4.7362
+val/mae_energy:    25.4643 eV   (untrained — expected to be large)
+val/mae_dipole:    1.1232 Debye
+```
+
+**Test 4 — Checkpoint:**
+
+```
+Checkpoint saved and reloaded successfully
+Energy predictions match: True
+Dipole predictions match: True
+```
+
+---
+
 ## Next Step
 
-Implement Phase 3 training loop (`src/lightning_module.py`, `train.py`) and
-run full training on the 10 000-molecule subset. Record final metrics in this file.
+Run full training on the 10 000-molecule subset. Record final val/mae_energy and val/mae_dipole.

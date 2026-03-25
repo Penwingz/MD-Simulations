@@ -12,6 +12,7 @@ def get_device():
         return torch.device("mps")
     return torch.device("cpu")
 
+#database corrupted
 def reset_data_directory(data_dir):
     if os.path.isdir(data_dir):
         shutil.rmtree(data_dir)
