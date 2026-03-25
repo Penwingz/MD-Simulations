@@ -31,6 +31,9 @@ checkpoints/
 .claude/
 CLAUDE.md
 
+# ── Temporary test notebooks (not permanent project files) ─────────────────────
+test_colab.ipynb
+
 # ── macOS ──────────────────────────────────────────────────────────────────────
 .DS_Store
 
