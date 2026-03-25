@@ -7,16 +7,10 @@ and cutoff functions used across the model.
 See .claude/INSTRUCTIONS.md § src/utils.py for the full spec.
 """
 
-# ── Phase 3 — NOT YET IMPLEMENTED ─────────────────────────────────────────────
-# Implement in TODO Phase 2 (Model Architecture).
-# Functions required (per INSTRUCTIONS.md):
-#   - get_device() -> torch.device
-#   - shifted_softplus(x: Tensor) -> Tensor
-#   - rbf_expansion(r: Tensor, n_rbf: int, r_min: float, r_max: float) -> Tensor
-#   - cosine_cutoff(r: Tensor, r_cutoff: float) -> Tensor
-#   - scatter_add_(src: Tensor, index: Tensor, dim_size: int) -> Tensor
+import math
 
 import torch
+import torch.nn.functional as F
 from torch import Tensor
 from torch_geometric.data import Data
 
@@ -80,6 +74,10 @@ def get_device() -> torch.device:
 def shifted_softplus(x: Tensor) -> Tensor:
     """Shifted softplus activation: log(0.5 * exp(x) + 0.5).
 
+    Numerically stable implementation via:
+        softplus(x) - log(2)
+    which equals log(exp(x) + 1) - log(2) = log(0.5 * exp(x) + 0.5).
+
     Smooth, non-saturating activation suitable for energy prediction.
     Gradient-friendly on MPS. No in-place ops.
 
@@ -89,13 +87,15 @@ def shifted_softplus(x: Tensor) -> Tensor:
     Returns:
         Tensor of the same shape as x.
     """
-    raise NotImplementedError("Implement shifted_softplus per INSTRUCTIONS.md")
+    return F.softplus(x) - math.log(2)
 
 
 def rbf_expansion(r: Tensor, n_rbf: int, r_min: float, r_max: float) -> Tensor:
     """Expand pairwise distances into Gaussian radial basis functions.
 
-    Centres are evenly spaced between r_min and r_max.
+    Centres are evenly spaced between r_min and r_max with spacing
+    ``(r_max - r_min) / n_rbf``.  The width parameter gamma is set to
+    ``0.5 / spacing ** 2`` so neighbouring Gaussians overlap at half-height.
 
     Args:
         r:     Pairwise distances, shape (E,).
@@ -106,7 +106,11 @@ def rbf_expansion(r: Tensor, n_rbf: int, r_min: float, r_max: float) -> Tensor:
     Returns:
         Basis function values, shape (E, n_rbf).
     """
-    raise NotImplementedError("Implement rbf_expansion per INSTRUCTIONS.md")
+    k = torch.arange(n_rbf, device=r.device, dtype=r.dtype)
+    spacing = (r_max - r_min) / n_rbf
+    centers = r_min + k * spacing          # (n_rbf,)
+    gamma = 0.5 / (spacing ** 2)
+    return torch.exp(-gamma * (r.unsqueeze(-1) - centers) ** 2)  # (E, n_rbf)
 
 
 def cosine_cutoff(r: Tensor, r_cutoff: float) -> Tensor:
@@ -122,4 +126,38 @@ def cosine_cutoff(r: Tensor, r_cutoff: float) -> Tensor:
     Returns:
         Envelope values in [0, 1], shape (E,).
     """
-    raise NotImplementedError("Implement cosine_cutoff per INSTRUCTIONS.md")
+    cutoff_vals = 0.5 * (torch.cos(torch.pi * r / r_cutoff) + 1.0)
+    return torch.where(r < r_cutoff, cutoff_vals, torch.zeros_like(cutoff_vals))
+
+
+def scatter_add(src: Tensor, index: Tensor, dim_size: int) -> Tensor:
+    """Scatter-add src values into an output tensor indexed by index.
+
+    Aggregates values from ``src`` at positions given by ``index`` into an
+    output buffer of size ``(dim_size, *src.shape[1:])``.  The operation is:
+
+        out[index[i], ...] += src[i, ...]
+
+    The in-place ``scatter_add_`` is called on a freshly allocated zero tensor,
+    which is safe for autograd (gradients flow through correctly).
+
+    Args:
+        src:      Source tensor of shape (N,) or (N, D, ...).
+        index:    1-D LongTensor of shape (N,) mapping each row of src to an
+                  output row.  Values must be in [0, dim_size).
+        dim_size: Size of the output's first dimension (e.g. number of
+                  molecules B or number of atoms N).
+
+    Returns:
+        Output tensor of shape (dim_size,) when src is 1-D, or
+        (dim_size, *src.shape[1:]) when src is multi-dimensional.
+    """
+    if src.dim() == 1:
+        out = src.new_zeros(dim_size)
+        out.scatter_add_(0, index, src)
+    else:
+        out_shape = (dim_size,) + src.shape[1:]
+        out = src.new_zeros(out_shape)
+        expanded_index = index.unsqueeze(-1).expand_as(src)
+        out.scatter_add_(0, expanded_index, src)
+    return out
