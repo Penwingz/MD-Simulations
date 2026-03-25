@@ -27,10 +27,14 @@ import logging
 import os
 import sys
 
+# Ensure project root is on sys.path so `src` is importable when running as a script.
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 import torch
 from omegaconf import OmegaConf
-from torch_geometric.data import Data
 from torch_geometric.datasets import QM9
+
+from src.utils import RadiusGraphTransform  # shared with src/dataset.py
 
 logging.basicConfig(level=logging.INFO, format="%(message)s")
 log = logging.getLogger(__name__)
@@ -41,54 +45,6 @@ log = logging.getLogger(__name__)
 # NOTE: index 7 is total DFT energy (~-1000s eV); index 1 is polarizability.
 TARGET_ENERGY_U0 = 12   # atomisation energy at 0 K (eV)
 TARGET_DIPOLE = 0       # dipole moment norm (Debye)
-
-
-class RadiusGraphTransform:
-    """Build radius-graph edges using torch.cdist (no torch-cluster dependency).
-
-    For each ordered pair (i, j) where i != j and dist(i, j) < r_cutoff,
-    adds a directed edge i → j.  Equivalent to
-    torch_geometric.transforms.RadiusGraph but pure-PyTorch, MPS-safe.
-
-    Args:
-        r:    Cutoff radius in Angstroms.
-        loop: If True, include self-loops (i == j).  Default False.
-    """
-
-    def __init__(self, r: float, loop: bool = False) -> None:
-        self.r = r
-        self.loop = loop
-
-    def __call__(self, data: Data) -> Data:
-        """Apply transform to a single molecular graph.
-
-        Args:
-            data: PyG Data object with ``pos`` attribute (N, 3).
-
-        Returns:
-            Same Data object with ``edge_index`` (2, E) and
-            ``edge_attr`` (E, 1) set.
-        """
-        pos = data.pos  # (N, 3)
-        dist = torch.cdist(pos.float(), pos.float())  # (N, N)
-
-        mask = dist < self.r
-        if not self.loop:
-            n = pos.size(0)
-            eye = torch.eye(n, dtype=torch.bool, device=pos.device)
-            mask = mask & ~eye
-
-        # COO edge_index: (2, E) — [source_row, target_col]
-        edge_index = mask.nonzero(as_tuple=False).t().contiguous()  # (2, E)
-
-        src, dst = edge_index[0], edge_index[1]
-        data.edge_index = edge_index
-        data.edge_attr = dist[src, dst].unsqueeze(-1)  # (E, 1)
-
-        return data
-
-    def __repr__(self) -> str:
-        return f"{self.__class__.__name__}(r={self.r}, loop={self.loop})"
 
 
 def compute_stats(dataset, subset_indices: list[int], seed: int) -> dict:
