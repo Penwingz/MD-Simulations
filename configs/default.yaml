@@ -10,7 +10,7 @@ data:
   root: "data/qm9"             # PyG dataset root (gitignored)
   subset_size: 10000           # Molecules to use. HARDWARE CONSTRAINT — do not raise without instruction.
                                # Set to null to use full QM9 (130,831 molecules).
-  r_cutoff: 5.0                # Angstroms — radius for RadiusGraph edge construction
+  r_cutoff: 6.0                # Angstroms — radius for RadiusGraph edge construction
   batch_size: 32               # Max 32 — MPS memory constraint
   num_workers: 4
   pin_memory: true
@@ -23,22 +23,22 @@ data:
 
 # ── Model ──────────────────────────────────────────────────────────────────────
 model:
-  d_model: 128                 # Atom embedding / hidden dimension. Range: [64, 256]
-  n_interactions: 3            # Number of SchNet interaction blocks. Range: [1, 6]
+  d_model: 256                 # Atom embedding / hidden dimension. Range: [64, 256]
+  n_interactions: 6            # Number of SchNet interaction blocks. Range: [1, 6]
   n_rbf: 50                    # Number of radial basis functions. Range: [20, 100]
-  r_cutoff: 5.0                # Must match data.r_cutoff
+  r_cutoff: 6.0                # Must match data.r_cutoff
   max_atomic_num: 10           # QM9 has Z in {1,6,7,8,9} — 10 with margin
 
 # ── Training ───────────────────────────────────────────────────────────────────
 training:
-  max_epochs: 300
-  learning_rate: 1.0e-3
+  max_epochs: 400
+  learning_rate: 5.0e-4
   weight_decay: 1.0e-4
   gradient_clip_val: 1.0
   lambda_energy: 1.0           # Loss weight for energy_U0 term
-  lambda_dipole: 1.0           # Loss weight for dipole_moment term
+  lambda_dipole: 3.0           # Loss weight for dipole_moment term (upweighted — dipole is harder)
   scheduler:
-    patience: 10               # Epochs with no val improvement before LR reduction
+    patience: 15               # Epochs with no val improvement before LR reduction
     factor: 0.5                # LR multiplied by this value on plateau
     min_lr: 1.0e-6
 
@@ -52,7 +52,7 @@ checkpoint:
 # ── Early stopping ─────────────────────────────────────────────────────────────
 early_stopping:
   monitor: "val/mae_energy"
-  patience: 30
+  patience: 50
   mode: "min"
 
 # ── Logging ────────────────────────────────────────────────────────────────────
