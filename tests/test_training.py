@@ -1,10 +1,8 @@
 """
-Tests for src/lightning_module.py — MLIPLightningModule.
+Tests for MLIPLightningModule.
 
-Uses synthetic mock data — no real QM9 data needed. Completes in < 30 seconds.
-
-Run:
-    python -m pytest tests/test_training.py -v --tb=short
+Uses synthetic mock data — no real QM9 data needed.
+Run: python -m pytest tests/test_training.py -v
 """
 
 from __future__ import annotations
@@ -22,8 +20,6 @@ from pytorch_lightning import Trainer
 
 from src.lightning_module import MLIPLightningModule
 
-
-# ── Helpers ────────────────────────────────────────────────────────────────────
 
 def _make_mock_config() -> OmegaConf:
     """Tiny config for tests — small model, no real data paths needed."""

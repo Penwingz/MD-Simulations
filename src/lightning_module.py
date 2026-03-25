@@ -1,10 +1,8 @@
 """
-PyTorch Lightning module for the Phase 3 HDNNP training loop.
+PyTorch Lightning module for the HDNNP training loop.
 
 Wraps HDNNPModel with multi-task weighted MAE loss, AdamW optimiser,
-ReduceLROnPlateau scheduler, and per-target metric logging.
-
-See .claude/INSTRUCTIONS.md § src/lightning_module.py for the full spec.
+and ReduceLROnPlateau scheduler.
 """
 
 from __future__ import annotations

@@ -1,5 +1,5 @@
 
-# ── Python ─────────────────────────────────────────────────────────────────────
+# Python
 .venv/
 __pycache__/
 *.pyc
@@ -9,7 +9,7 @@ __pycache__/
 dist/
 build/
 
-# ── Phase 2 data (ASE / SchNetPack) ────────────────────────────────────────────
+# Phase 2 data (ASE / SchNetPack)
 data/qm9.db
 data_backup_*/
 split.npz
@@ -17,25 +17,26 @@ split_backup_*.npz
 splitting.lock
 splitting_backup_*.lock
 
-# ── Phase 3 data (PyG) ─────────────────────────────────────────────────────────
+# Phase 3 data (PyG)
 data/qm9/
 data/stats.json
 
-# ── Checkpoints & logs ─────────────────────────────────────────────────────────
+# Checkpoints & logs
 lightning_logs/
 checkpoints/
 *.ckpt
 *.tfevents.*
 
-# ── Claude agent context (never commit) ────────────────────────────────────────
+# Claude agent context (never commit)
 .claude/
 CLAUDE.md
 
-# ── Temporary test notebooks (not permanent project files) ─────────────────────
+# Temporary test notebooks
 test_colab.ipynb
+colabtests/
 
-# ── macOS ──────────────────────────────────────────────────────────────────────
+# macOS
 .DS_Store
 
-# ── Keep results/ in git ───────────────────────────────────────────────────────
+# Keep results/ in git
 !results/

@@ -1,12 +1,8 @@
 """
-Tests for src/model.py — HDNNPModel.
+Tests for HDNNPModel.
 
-All tests use mock batches (5 atoms, 2 molecules) — no real QM9 data.
-Must complete in < 30 seconds.
-See .claude/INSTRUCTIONS.md § tests/test_model.py for full requirements.
-
-Run:
-    python -m pytest tests/test_model.py -v --tb=short
+Uses mock batches (5 atoms, 2 molecules) — no real QM9 data.
+Run: python -m pytest tests/test_model.py -v
 """
 
 import pytest

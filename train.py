@@ -1,13 +1,10 @@
 """
-Phase 3 training entry point.
+Training entry point for the HDNNP pipeline.
 
 Usage:
     python train.py --config configs/default.yaml
     python train.py --config configs/default.yaml data.subset_size=5000
     python train.py --config configs/default.yaml trainer.fast_dev_run=true
-
-NOTE: This is the Phase 3 entry point. For Phase 2 training, use:
-    python src/train_overfit.py
 """
 
 from __future__ import annotations
@@ -55,7 +52,6 @@ def main() -> None:
 
     pl.seed_everything(int(config.seed), workers=True)
 
-    # ── Load normalisation stats and inject into config ─────────────────────────
     stats_path = Path("data/stats.json")
     if not stats_path.exists():
         print(
@@ -71,11 +67,9 @@ def main() -> None:
     # Merge stats into config so they are saved with the checkpoint hparams.
     config = OmegaConf.merge(config, OmegaConf.create({"stats": raw_stats}))
 
-    # ── Instantiate datamodule and model ────────────────────────────────────────
     datamodule = QM9DataModule(config)
     model = MLIPLightningModule(config)
 
-    # ── Trainer flags ───────────────────────────────────────────────────────────
     fast_dev_run = OmegaConf.select(config, "trainer.fast_dev_run", default=False)
 
     callbacks = [
@@ -108,7 +102,6 @@ def main() -> None:
 
     trainer.fit(model, datamodule=datamodule)
 
-    # ── Print final validation metrics ──────────────────────────────────────────
     if not fast_dev_run:
         print("\n=== Final Validation Metrics ===")
         val_results = trainer.validate(model, datamodule=datamodule, verbose=False)

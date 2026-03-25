@@ -3,8 +3,6 @@ Utility functions for the Phase 3 HDNNP pipeline.
 
 Implements device selection, activation functions, radial basis functions,
 and cutoff functions used across the model.
-
-See .claude/INSTRUCTIONS.md § src/utils.py for the full spec.
 """
 
 import math
@@ -15,7 +13,7 @@ from torch import Tensor
 from torch_geometric.data import Data
 
 
-# ── RadiusGraph transform (shared between data/download.py and src/dataset.py) ─
+# RadiusGraph transform — shared between data/download.py and src/dataset.py
 
 class RadiusGraphTransform:
     """Build radius-graph edges using torch.cdist (no torch-cluster dependency).

@@ -2,9 +2,6 @@
 QM9 data module for the Phase 3 HDNNP pipeline.
 
 Uses torch_geometric.datasets.QM9 (PyG HDF5 format) — NOT schnetpack.
-Do NOT import from src/custom_loader.py here; that is a Phase 2 artifact.
-
-See .claude/INSTRUCTIONS.md § src/dataset.py for the full spec.
 """
 
 import json
@@ -44,8 +41,6 @@ class QM9DataModule(pl.LightningDataModule):
         self.val_dataset: Optional[list] = None
         self.test_dataset: Optional[list] = None
         self._stats: Optional[dict] = None
-
-    # ── LightningDataModule interface ──────────────────────────────────────────
 
     def prepare_data(self) -> None:
         """Download QM9 and build radius-graph edges (called once, main process only).
@@ -112,8 +107,6 @@ class QM9DataModule(pl.LightningDataModule):
         """Return DataLoader for the test split (no shuffle)."""
         return self._make_loader(self.test_dataset, shuffle=False)
 
-    # ── Properties ─────────────────────────────────────────────────────────────
-
     @property
     def stats(self) -> dict:
         """Normalisation statistics loaded from ``data/stats.json``.
@@ -126,8 +119,6 @@ class QM9DataModule(pl.LightningDataModule):
         if self._stats is None:
             raise RuntimeError("stats not available — call setup() first.")
         return self._stats
-
-    # ── Internal helpers ───────────────────────────────────────────────────────
 
     def _load_stats(self) -> dict:
         """Load normalisation statistics from ``data/stats.json``.

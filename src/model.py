@@ -1,11 +1,6 @@
 """
-HDNNP model for the Phase 3 pipeline.
-
-Multi-target graph neural network predicting energy_U0 and dipole_moment
-jointly using SchNet-style message passing and a charge-based dipole head.
-
-See .claude/INSTRUCTIONS.md § src/model.py for the full architecture spec.
-See .claude/SCHEMA.md § 2 for all intermediate tensor shapes.
+HDNNP model: multi-target GNN predicting energy_U0 and dipole_moment
+using SchNet-style message passing and a charge-based dipole head.
 """
 
 from __future__ import annotations
@@ -192,10 +187,8 @@ class HDNNPModel(nn.Module):
         batch_idx: Tensor = batch.batch        # (N,)
         B: int = int(batch_idx.max().item()) + 1
 
-        # ── 1. Embed atomic numbers ───────────────────────────────────────────
         x = self.embedding(z)                  # (N, d_model)
 
-        # ── 2. Compute edge features ──────────────────────────────────────────
         src_idx, dst_idx = edge_index[0], edge_index[1]
 
         if edge_index.size(1) > 0:
@@ -204,19 +197,15 @@ class HDNNPModel(nn.Module):
             fc = cosine_cutoff(r_ij, self.r_cutoff)                     # (E,)
             e_ij = e_ij * fc.unsqueeze(-1)                              # (E, n_rbf)
         else:
-            # No edges — create empty tensors with correct shapes so the
-            # interaction blocks receive valid (but vacuous) inputs.
+            # No edges — empty tensors so interaction blocks still receive valid input.
             e_ij = x.new_zeros(0, self.n_rbf)
 
-        # ── 3. Interaction blocks ─────────────────────────────────────────────
         for block in self.interactions:
             x = block(x, edge_index, e_ij)
 
-        # ── 4. Energy head ────────────────────────────────────────────────────
         eps_i = self.energy_head(x).squeeze(-1)              # (N,)
         energy = scatter_add(eps_i, batch_idx, dim_size=B)   # (B,)
 
-        # ── 5. Charge head (charge-neutralised dipole) ────────────────────────
         q_raw = self.charge_head(x).squeeze(-1)              # (N,)
 
         # Neutralise: subtract per-molecule mean charge from each atom.

@@ -1,11 +1,8 @@
 """
-Tests for src/dataset.py — QM9DataModule.
+Tests for QM9DataModule.
 
-Uses a small subset (100 molecules) of the already-downloaded QM9 data so
-that each test completes in well under 30 seconds.  No network access needed.
-
-Run:
-    python -m pytest tests/test_dataset.py -v --tb=short
+Uses a 100-molecule subset; no network access needed.
+Run: python -m pytest tests/test_dataset.py -v
 """
 
 import os
@@ -15,8 +12,6 @@ import torch
 from omegaconf import OmegaConf
 
 from src.dataset import QM9DataModule
-
-# ── Tiny config fixture ────────────────────────────────────────────────────────
 
 @pytest.fixture(scope="module")
 def tiny_config():
