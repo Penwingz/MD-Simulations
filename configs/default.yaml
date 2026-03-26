@@ -31,7 +31,7 @@ model:
 
 # ── Training ───────────────────────────────────────────────────────────────────
 training:
-  max_epochs: 400
+  max_epochs: 800
   learning_rate: 5.0e-4
   weight_decay: 1.0e-4
   gradient_clip_val: 1.0
