@@ -1,4 +1,4 @@
-# Phase 4 — Baseline Training Run
+# Training Run Results — All Phases
 
 ## Execution Date
 2026-03-26
@@ -48,22 +48,36 @@ Normalised training set: mean ≈ −0.005, std ≈ 0.997 (energy); mean ≈ 0.0
 Targets not yet met (< 0.100 eV, < 0.200 D). Model is learning meaningfully — untrained
 baseline was 25.46 eV (val/mae_energy at epoch 0).
 
-## Comparison with Phase 2 Baseline
+## Full Comparison Across All Runs
 
-Phase 2 used SchNetPack on Apple Silicon MPS, 200 training molecules, 50 epochs, no
-normalisation, predicting raw total DFT energy (index 7, ~−1000s eV range).
+| | Phase 2 | Phase 4 (Baseline) | Phase 5 Run 1 |
+|---|---|---|---|
+| Framework | SchNetPack 2.2 | PyG + HDNNPModel | PyG + HDNNPModel |
+| Hardware | Apple MPS | Colab T4 | Colab T4 |
+| Training molecules | 200 | 8 000 | 8 000 |
+| Val molecules | 40 | 1 000 | 1 000 |
+| Model params | ~226K | 186K | **1.3M** |
+| d_model | default | 128 | 256 |
+| n_interactions | default | 3 | 6 |
+| r_cutoff | default | 5.0 Å | 6.0 Å |
+| Energy target | Total DFT (idx 7, ~−1000s eV) | Atomisation (idx 12, ~−76 eV) | Atomisation (idx 12, ~−76 eV) |
+| Normalisation | None | z-score | z-score |
+| Loss function | MSE | MAE (λ_e=1, λ_d=1) | MAE (λ_e=1, λ_d=3) |
+| Learning rate | 1e-3 (Adam) | 1e-3 (AdamW) | 5e-4 (AdamW) |
+| Epochs run | 50 | 226 (early stop) | 400 (hit max — not converged) |
+| **Val energy score** | **RMSE ≈ 7.96 eV** | **MAE = 0.2149 eV** | **MAE = 0.1463 eV** |
+| **Val dipole score** | Not predicted | MAE = 0.7569 D | MAE = 0.7220 D |
+| **Test energy score** | — | MAE = 0.2240 eV | MAE = 0.1449 eV |
+| **Test dipole score** | — | MAE = 0.7401 D | MAE = 0.6974 D |
+| Approx. energy MSE | ~63.4 eV² | ~0.05–0.08 eV² | ~0.02–0.04 eV² |
 
-| | Phase 2 | Phase 4 |
-|---|---|---|
-| Training molecules | 200 | 8 000 |
-| Val molecules | 40 | 1 000 |
-| Energy target | Total DFT (~−1000s eV) | Atomisation (~−76 eV) |
-| Normalisation | None | z-score |
-| Final val score | 63.4 eV² (MSE) → RMSE ≈ 7.96 eV | MAE = 0.224 eV |
-| Approx. MSE | 63.4 eV² | ~0.050–0.075 eV² |
+**Energy improvement trajectory:**
+- Phase 2 → Phase 4: ~850–1200× MSE reduction (different target, so indicative only)
+- Phase 4 → Phase 5: **32% MAE reduction** (same task, direct comparison)
+- Phase 4 → Phase 5: untrained baseline was 25.46 eV; Phase 5 best = 0.1463 eV — **174× reduction from untrained**
 
-The approximate MSE improvement is ~850–1 200×. Phase 2 was an overfit sanity check;
-Phase 4 is a proper generalisation run on held-out molecules.
+Phase 2 was an overfit sanity check (200 molecules, no normalisation, total DFT energy).
+Phase 4 and 5 are proper generalisation runs with held-out test sets.
 
 ## Improvement Log
 
