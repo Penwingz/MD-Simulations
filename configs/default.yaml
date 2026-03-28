@@ -23,8 +23,10 @@ data:
 
 # ── Model ──────────────────────────────────────────────────────────────────────
 model:
-  d_model: 256                 # Atom embedding / hidden dimension. Range: [64, 256]
-  n_interactions: 6            # Number of SchNet interaction blocks. Range: [1, 6]
+  type: "painn"                # "painn" (Phase 6) or "hdnnp" (Phase 5 SchNet)
+  n_features: 128              # PaiNN feature dimension F  [used when type=painn]
+  d_model: 256                 # SchNet embedding dimension [used when type=hdnnp]
+  n_interactions: 3            # Number of (Message+Update) block pairs
   n_rbf: 50                    # Number of radial basis functions. Range: [20, 100]
   r_cutoff: 6.0                # Must match data.r_cutoff
   max_atomic_num: 10           # QM9 has Z in {1,6,7,8,9} — 10 with margin

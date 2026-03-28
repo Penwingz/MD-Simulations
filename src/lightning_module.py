@@ -13,7 +13,7 @@ import pytorch_lightning as pl
 from omegaconf import DictConfig, OmegaConf
 from torch import Tensor
 
-from src.model import HDNNPModel
+from src.model import HDNNPModel, PaiNNModel
 
 
 class MLIPLightningModule(pl.LightningModule):
@@ -41,7 +41,13 @@ class MLIPLightningModule(pl.LightningModule):
         # Reconstruct DictConfig for dot-access throughout this instance.
         self.config: DictConfig = OmegaConf.create(config_container)
 
-        self.model = HDNNPModel(self.config)
+        model_type = str(self.config.model.get("type", "hdnnp")).lower()
+        if model_type == "painn":
+            self.model = PaiNNModel(self.config)
+        elif model_type == "hdnnp":
+            self.model = HDNNPModel(self.config)
+        else:
+            raise ValueError(f"Unknown model.type: {model_type!r}")
 
         # Loss weights from config — use self.config (DictConfig), not raw arg
         self.lambda_energy: float = float(self.config.training.lambda_energy)
