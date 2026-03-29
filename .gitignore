@@ -35,6 +35,9 @@ CLAUDE.md
 test_colab.ipynb
 colabtests/
 
+# Reference papers (local only — not committed)
+Reference Papers/
+
 # macOS
 .DS_Store
 
